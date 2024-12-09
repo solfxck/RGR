@@ -5,11 +5,7 @@ using namespace std;
 
 // шифрования/дешифрования Атбаш
 string Atbash(string text) { 
-    if (text.empty()) {
-        throw runtime_error("Ошибка: Пустой текст!");
-    }
-
-    // карту соответствий символов напрямую
+    // таблица соответствий
     map<char, char> symbolMap = {
         {'0', '='}, {'=', '0'},
         {'1', '?'}, {'?', '1'},
@@ -34,211 +30,195 @@ string Atbash(string text) {
         {'-', '-'}
     };
 
-    try {
-        for (char& ch : text) {
-            // русский алфавит
-            if (ch >= 'А' && ch <= 'Я') {
-                ch = 'я' - (ch - 'А');
-            }
-            else if (ch >= 'а' && ch <= 'я') {
-                ch = 'Я' - (ch - 'а');
-            }
-            // английский алфавит
-            else if (ch >= 'A' && ch <= 'Z') {
-                ch = 'z' - (ch - 'A');
-            }
-            else if (ch >= 'a' && ch <= 'z') {
-                ch = 'Z' - (ch - 'a');
-            }
-            // цифры и специальные символы
-            else {
-                auto it = symbolMap.find(ch);
-                if (it != symbolMap.end()) {
-                    ch = it->second;
-                }
+    for (char& ch : text) {
+        // русский алфавит
+        if (ch >= 'А' && ch <= 'Я') {
+            ch = 'я' - (ch - 'А');
+        }
+        else if (ch >= 'а' && ch <= 'я') {
+            ch = 'Я' - (ch - 'а');
+        }
+        // английский алфавит
+        else if (ch >= 'A' && ch <= 'Z') {
+            ch = 'z' - (ch - 'A');
+        }
+        else if (ch >= 'a' && ch <= 'z') {
+            ch = 'Z' - (ch - 'a');
+        }
+        // цифры и специальные символы
+        else {
+            auto it = symbolMap.find(ch); // поиск символа в таблице (возвращает итератор)
+            if (it != symbolMap.end()) { // если символ наи?ден (проверям, что итератор указывает не напозицию после последнего элемента)
+                ch = it->second; // замена (обращение ко второму элементу)
             }
         }
     }
-    catch (const exception& e) {
-        throw runtime_error("Ошибка при шифровании: " + string(e.what()));
-    }
+
     return text;
 }
 
 // функция шифрования
 void AtbashEncrypt() {
-    try {
-        while (true) {
-            system("cls");
-            string inputChoice;
-            cout << "Выберите способ ввода текста:" << endl;
-            cout << "1. Ввод с консоли" << endl;
-            cout << "2. Ввод из файла" << endl;
-            cout << "3. Назад" << endl;
-            cout << "Ваш выбор: ";
-            cin >> inputChoice;
+    while (true) {
+        system("cls");
+
+        string inputChoice;
+        cout << "Выберите способ ввода текста:" << endl;
+        cout << "1. Ввод с консоли" << endl;
+        cout << "2. Ввод из файла" << endl;
+        cout << "3. Назад" << endl;
+        cout << "Ваш выбор: ";
+        
+        try {
+            getline(cin, inputChoice);
 
             if (inputChoice == "3") {
                 return;
             }
 
+            if (inputChoice.length() != 1 || !isdigit(inputChoice[0]) || 
+                inputChoice[0] < '1' || inputChoice[0] > '3' || 
+                inputChoice.find(' ') != string::npos) {
+                throw invalid_argument("Неверный выбор. Попробуйте снова.");
+            }
+
             string text;
-            try {
-                if (inputChoice == "1") {
-                    text = inputTextFromConsole();
-                } else if (inputChoice == "2") {
-                    text = inputTextFromFile();
-                } else {
-                    throw runtime_error("Неверный выбор.");
-                }
-            }
-            catch (const exception& e) {
-                cout << "Ошибка: " << e.what() << endl;
-                cout << "\nНажмите Enter для продолжения...";
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                cin.get();
-                continue;
+            if (inputChoice == "1") {
+                text = inputTextFromConsole();
+            } else if (inputChoice == "2") {
+                text = inputTextFromFile();
             }
 
-            if (text.empty()) continue;
+            if (text.empty()) {
+                throw invalid_argument("Текст не может быть пустым.");
+            }
 
-            string result = Atbash(string(text));
-            cout << "Зашифрованный текст: " << result << endl;
+            string result = Atbash(text);
+            cout << "\nЗашифрованный текст: " << result << endl;
 
-            while (true) {
-                string saveChoice;
-                cout << "\nСохранить результат в файл?" << endl;
-                cout << "1. Да" << endl;
-                cout << "2. Нет" << endl;
-                cout << "3. Назад" << endl;
-                cout << "Ваш выбор: ";
-                cin >> saveChoice;
+            bool saveMenuActive = true;
+            while (saveMenuActive) {
+                try {
+                    string saveChoice;
+                    cout << "\nСохранить результат в файл?" << endl;
+                    cout << "1. Да" << endl;
+                    cout << "2. Нет" << endl;
+                    cout << "3. Назад" << endl;
+                    cout << "Ваш выбор: ";
+                    getline(cin, saveChoice);
 
-                if (saveChoice == "3") {
-                    break; // возврат к выбору способа ввода
-                }
+                    if (saveChoice.length() != 1 || !isdigit(saveChoice[0]) || 
+                        saveChoice[0] < '1' || saveChoice[0] > '3' || 
+                        saveChoice.find(' ') != string::npos) {
+                        throw invalid_argument("Неверный выбор. Попробуйте снова.");
+                    }
 
-                if (saveChoice == "1") {
-                    try {
+                    if (saveChoice == "1") {
                         saveTextToFile(result);
-                        cout << "\nНажмите Enter для продолжения...";
-                        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                        cin.get();
-                        return; // возврат в меню шифра
+                        system("pause");
+                        return;
                     }
-                    catch (const exception& e) {
-                        cout << "Ошибка при сохранении: " << e.what() << endl;
-                        cout << "\nНажмите Enter для продолжения...";
-                        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                        cin.get();
-                        continue; // повторить попытку сохранения
+                    else if (saveChoice == "2") {
+                        return;
+                    }
+                    else if (saveChoice == "3") {
+                        saveMenuActive = false;
                     }
                 }
-                else if (saveChoice == "2") {
-                    return; // возврат в меню шифра
-                }
-                else {
-                    cout << "Неверный выбор." << endl;
-                    cout << "\nНажмите Enter для продолжения...";
-                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                    cin.get();
+                catch (const exception& e) {
+                    cout << "Ошибка: " << e.what() << endl;
+                    system("pause");
+                    system("cls");
+                    cout << "\nЗашифрованный текст: " << result << endl;
                 }
             }
         }
-    }
-    catch (const exception& e) {
-        cout << "Ошибка: " << e.what() << endl;
-        cout << "\nНажмите Enter для продолжения...";
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        cin.get();
+        catch (const exception& e) {
+            cout << "Ошибка: " << e.what() << endl;
+            system("pause");
+        }
     }
 }
 
 // функция дешифрования
 void AtbashDecrypt() {
-    try {
-        while (true) {
-            system("cls");
-            string inputChoice;
-            cout << "Выберите способ ввода текста:" << endl;
-            cout << "1. Ввод с консоли" << endl;
-            cout << "2. Ввод из файла" << endl;
-            cout << "3. Назад" << endl;
-            cout << "Ваш выбор: ";
-            cin >> inputChoice;
+    while (true) {
+        system("cls");
+
+        string inputChoice;
+        cout << "Выберите способ ввода текста:" << endl;
+        cout << "1. Ввод с консоли" << endl;
+        cout << "2. Ввод из файла" << endl;
+        cout << "3. Назад" << endl;
+        cout << "Ваш выбор: ";
+        
+        try {
+            getline(cin, inputChoice);
 
             if (inputChoice == "3") {
                 return;
             }
 
+            if (inputChoice.length() != 1 || !isdigit(inputChoice[0]) || 
+                inputChoice[0] < '1' || inputChoice[0] > '3' || 
+                inputChoice.find(' ') != string::npos) {
+                throw invalid_argument("Неверный выбор. Попробуйте снова.");
+            }
+
             string text;
-            try {
-                if (inputChoice == "1") {
-                    text = inputTextFromConsole();
-                } else if (inputChoice == "2") {
-                    text = inputTextFromFile();
-                } else {
-                    throw runtime_error("Неверный выбор.");
-                }
-            }
-            catch (const exception& e) {
-                cout << "Ошибка: " << e.what() << endl;
-                cout << "\nНажмите Enter для продолжения...";
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                cin.get();
-                continue;
+            if (inputChoice == "1") {
+                text = inputTextFromConsole();
+            } else if (inputChoice == "2") {
+                text = inputTextFromFile();
             }
 
-            if (text.empty()) continue;
+            if (text.empty()) {
+                throw invalid_argument("Текст не может быть пустым.");
+            }
 
-            string result = Atbash(string(text));
-            cout << "Дешифрованный текст: " << result << endl;
+            string result = Atbash(text);
+            cout << "\nРасшифрованный текст: " << result << endl;
 
-            while (true) {
-                string saveChoice;
-                cout << "\nСохранить результат в файл?" << endl;
-                cout << "1. Да" << endl;
-                cout << "2. Нет" << endl;
-                cout << "3. Назад" << endl;
-                cout << "Ваш выбор: ";
-                cin >> saveChoice;
+            bool saveMenuActive = true;
+            while (saveMenuActive) {
+                try {
+                    string saveChoice;
+                    cout << "\nСохранить результат в файл?" << endl;
+                    cout << "1. Да" << endl;
+                    cout << "2. Нет" << endl;
+                    cout << "3. Назад" << endl;
+                    cout << "Ваш выбор: ";
+                    getline(cin, saveChoice);
 
-                if (saveChoice == "3") {
-                    break; // возврат к выбору способа ввода
-                }
+                    if (saveChoice.length() != 1 || !isdigit(saveChoice[0]) || 
+                        saveChoice[0] < '1' || saveChoice[0] > '3' || 
+                        saveChoice.find(' ') != string::npos) {
+                        throw invalid_argument("Неверный выбор. Попробуйте снова.");
+                    }
 
-                if (saveChoice == "1") {
-                    try {
+                    if (saveChoice == "1") {
                         saveTextToFile(result);
-                        cout << "\nНажмите Enter для продолжения...";
-                        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                        cin.get();
-                        return; // возврат в меню шифра
+                        system("pause");
+                        return;
                     }
-                    catch (const exception& e) {
-                        cout << "Ошибка при сохранении: " << e.what() << endl;
-                        cout << "\nНажмите Enter для продолжения...";
-                        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                        cin.get();
-                        continue; // повторить попытку сохранения
+                    else if (saveChoice == "2") {
+                        return;
+                    }
+                    else if (saveChoice == "3") {
+                        saveMenuActive = false;
                     }
                 }
-                else if (saveChoice == "2") {
-                    return; // возврат в меню шифра
-                }
-                else {
-                    cout << "Неверный выбор." << endl;
-                    cout << "\nНажмите Enter для продолжения...";
-                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                    cin.get();
+                catch (const exception& e) {
+                    cout << "Ошибка: " << e.what() << endl;
+                    system("pause");
+                    system("cls");
+                    cout << "\nРасшифрованный текст: " << result << endl;
                 }
             }
         }
-    }
-    catch (const exception& e) {
-        cout << "Ошибка: " << e.what() << endl;
-        cout << "\nНажмите Enter для продолжения...";
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        cin.get();
+        catch (const exception& e) {
+            cout << "Ошибка: " << e.what() << endl;
+            system("pause");
+        }
     }
 }

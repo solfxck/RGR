@@ -4,32 +4,32 @@
 using namespace std;
 namespace fs = std::filesystem;
 
-// С„СѓРЅРєС†РёСЏ РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ РёРЅРґРµРєСЃР° СЃРёРјРІРѕР»Р° (РєРѕСЃС‚С‹Р»Рё, С‚.Рє. РЅРµРєРѕРѕСЂРµРєС‚РЅРѕ СЂР°Р±РѕС‚Р°РµС‚ РєРѕРґРёСЂРѕРІРєР° UTF-8)
+// функция для получения индекса символа (костыли, т.к. некооректно работает кодировка UTF-8)
 int getCharIndex(char c) {
     unsigned char uc = static_cast<unsigned char>(c);
     int index = -1;
     
-    // РїСЂРѕРІРµСЂРєР° РґРёР°РїР°Р·РѕРЅР° СЃРёРјРІРѕР»РѕРІ (0xC0-0xDF)
+    // проверка диапазона символов (0xC0-0xDF)
     if (uc >= 0xC0 && uc <= 0xDF) {
         index = uc - 0xC0;
     }
-    // РїСЂРѕРІРµСЂРєР° РґРёР°РїР°Р·РѕРЅР° СЃРёРјРІРѕР»РѕРІ (0xE0-0xFF)
+    // проверка диапазона символов (0xE0-0xFF)
     else if (uc >= 0xE0 && uc <= 0xFF) {
         index = (uc - 0xE0) + 32;
     }
-    // РїСЂРѕРІРµСЂРєР° РґРёР°РїР°Р·РѕРЅР° СЃРёРјРІРѕР»РѕРІ (A-Z)
+    // проверка диапазона символов (A-Z)
     else if (uc >= 'A' && uc <= 'Z') {
         index = (uc - 'A') + 64;
     }
-    // РїСЂРѕРІРµСЂРєР° РґРёР°РїР°Р·РѕРЅР° СЃРёРјРІРѕР»РѕРІ (a-z)
+    // проверка диапазона символов (a-z)
     else if (uc >= 'a' && uc <= 'z') {
         index = (uc - 'a') + 90;
     }
-    // РїСЂРѕРІРµСЂРєР° РґРёР°РїР°Р·РѕРЅР° СЃРёРјРІРѕР»РѕРІ (0-9)
+    // проверка диапазона символов (0-9)
     else if (uc >= '0' && uc <= '9') {
         index = (uc - '0') + 116;
     }
-    // СЃРїРµС†РёР°Р»СЊРЅС‹Рµ СЃРёРјРІРѕР»С‹
+    // специальные символы
     else {
         const string specialChars = " .,!?@#$%^&*()-+=<>[]{}|/\"';:\\";
         size_t pos = specialChars.find(c);
@@ -41,31 +41,31 @@ int getCharIndex(char c) {
     return index;
 }
 
-// С„СѓРЅРєС†РёСЏ РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ СЃРёРјРІРѕР»Р° РїРѕ РёРЅРґРµРєСЃСѓ
+// функция для получения символа по индексу
 char getCharFromIndex(int index) {
     if (index < 0) return '\0';
     
-    // РїСЂРѕРІРµСЂРєР° РґРёР°РїР°Р·РѕРЅР° СЃРёРјРІРѕР»РѕРІ (0xC0)
+    // проверка диапазона символов (0xC0)
     if (index < 32) {
         return static_cast<char>(index + 0xC0);
     }
-    // РїСЂРѕРІРµСЂРєР° РґРёР°РїР°Р·РѕРЅР° СЃРёРјРІРѕР»РѕРІ (0xE0)
+    // проверка диапазона символов (0xE0)
     else if (index < 64) {
         return static_cast<char>((index - 32) + 0xE0);
     }
-    // РїСЂРѕРІРµСЂРєР° РґРёР°РїР°Р·РѕРЅР° СЃРёРјРІРѕР»РѕРІ (A-Z)
+    // проверка диапазона символов (A-Z)
     else if (index < 90) {
         return static_cast<char>((index - 64) + 'A');
     }
-    // РїСЂРѕРІРµСЂРєР° РґРёР°РїР°Р·РѕРЅР° СЃРёРјРІРѕР»РѕРІ (a-z)
+    // проверка диапазона символов (a-z)
     else if (index < 116) {
         return static_cast<char>((index - 90) + 'a');
     }
-    // РїСЂРѕРІРµСЂРєР° РґРёР°РїР°Р·РѕРЅР° СЃРёРјРІРѕР»РѕРІ (0-9)
+    // проверка диапазона символов (0-9)
     else if (index < 126) {
         return static_cast<char>((index - 116) + '0');
     }
-    // СЃРїРµС†РёР°Р»СЊРЅС‹Рµ СЃРёРјРІРѕР»С‹
+    // специальные символы
     else {
         const string specialChars = " .,!?@#$%^&*()-+=<>[]{}|/\"';:\\";
         int specialIndex = index - 126;
@@ -77,7 +77,7 @@ char getCharFromIndex(int index) {
     return '\0';
 }
 
-// С„СѓРЅРєС†РёСЏ РґР»СЏ РіРµРЅРµСЂР°С†РёРё СЃР»СѓС‡Р°Р№РЅРѕРіРѕ РєР»СЋС‡Р°
+// функция для генерации случайного ключа
 string generateRandomKey(int length) {
     string key;
     key.reserve(length);
@@ -85,48 +85,36 @@ string generateRandomKey(int length) {
     srand(static_cast<unsigned int>(time(nullptr)));
     
     for (int i = 0; i < length; ++i) {
-        int randomIndex = rand() % 161; // РіРµРЅРµСЂР°С†РёСЏ СЃР»СѓС‡Р°Р№РЅРѕРіРѕ РёРЅРґРµРєСЃР°
+        int randomIndex = rand() % 161; // генерация случайного индекса
         key += getCharFromIndex(randomIndex);
     }
     
     return key;
 }
 
-// С„СѓРЅРєС†РёСЏ РґР»СЏ С€РёС„СЂРѕРІР°РЅРёСЏ С‚РµРєСЃС‚Р° СЃ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµРј РјРµС‚РѕРґР° Р’РµСЂРЅР°РјР°
-string Vernam(const string& text, const string& key) {
-    if (text.empty()) {
-        throw runtime_error("РћС€РёР±РєР°: С‚РµРєСЃС‚ РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСѓСЃС‚С‹Рј!");
-    }
+// функция для шифрования текста с использованием метода Вернама
+string Vernam(const string& text, const string& key) {    
+    string result; // строка для хранения зашифрованного текста
+    result.reserve(text.length()); // предварительное выделение памяти
     
-    if (key.empty()) {
-        throw runtime_error("РћС€РёР±РєР°: РєР»СЋС‡ РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСѓСЃС‚С‹Рј!");
-    }
-    
-    if (key.length() < text.length()) {
-        throw runtime_error("РћС€РёР±РєР°: РґР»РёРЅР° РєР»СЋС‡Р° РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РЅРµ РјРµРЅСЊС€Рµ РґР»РёРЅС‹ С‚РµРєСЃС‚Р°!");
-    }
-    
-    string result;
-    result.reserve(text.length());
-    
-    for (size_t i = 0; i < text.length(); ++i) {
-        unsigned char textChar = static_cast<unsigned char>(text[i]);
+    for (size_t i = 0; i < text.length(); ++i) { // проход по каждому символу текста
+        unsigned char textChar = static_cast<unsigned char>(text[i]); // преобразование символа в unsigned char
         unsigned char keyChar = static_cast<unsigned char>(key[i]);
         
-        int textIndex = getCharIndex(text[i]);
+        int textIndex = getCharIndex(text[i]); // получение индекса символа
         int keyIndex = getCharIndex(key[i]);
         
-        // РµСЃР»Рё СЃРёРјРІРѕР» РЅРµ РЅР°Р№РґРµРЅ, РґРѕР±Р°РІР»СЏРµРј РµРіРѕ РІ СЂРµР·СѓР»СЊС‚Р°С‚ Р±РµР· РёР·РјРµРЅРµРЅРёР№
-        if (textIndex == -1 || keyIndex == -1) {
+        // если символ не найден, добавляем его в результат без изменений
+        if (textIndex == -1 || keyIndex == -1) { 
             result += text[i];
             continue;
         }
         
-        // РїСЂРёРјРµРЅРµРЅРёРµ РѕРїРµСЂР°С†РёРё XOR РґР»СЏ С€РёС„СЂРѕРІР°РЅРёСЏ
-        int resultIndex = (textIndex ^ keyIndex) % 256;  
-        char resultChar = getCharFromIndex(resultIndex);
+        // применение операции XOR для шифрования
+        int resultIndex = (textIndex ^ keyIndex) % 256; // делим на 256, чтобы получить индекс в диапазоне от 0 до 255 
+        char resultChar = getCharFromIndex(resultIndex); // преобразование индекса в символ
         
-        // РµСЃР»Рё СЂРµР·СѓР»СЊС‚Р°С‚ РЅРµ РЅР°Р№РґРµРЅ, РґРѕР±Р°РІР»СЏРµРј РёСЃС…РѕРґРЅС‹Р№ СЃРёРјРІРѕР»
+        // если результат не найден, добавляем исходный символ
         if (resultChar == '\0') {
             result += text[i];
         } else {
@@ -138,278 +126,254 @@ string Vernam(const string& text, const string& key) {
 }
 
 void VernamEncrypt() {
-    try {
-        while (true) {
-            system("cls");
-            string inputChoice;
-            cout << "Р вЂ™РЎвЂ№Р В±Р ВµРЎР‚Р С‘РЎвЂљР Вµ РЎРѓР С—Р С•РЎРѓР С•Р В± Р Р†Р Р†Р С•Р Т‘Р В° РЎвЂљР ВµР С”РЎРѓРЎвЂљР В°:" << endl;
-            cout << "1. Р вЂ™Р Р†Р С•Р Т‘ РЎРѓ Р С”Р С•Р Р…РЎРѓР С•Р В»Р С‘" << endl;
-            cout << "2. Р вЂ™Р Р†Р С•Р Т‘ Р С‘Р В· РЎвЂћР В°Р в„–Р В»Р В°" << endl;
-            cout << "3. Р СњР В°Р В·Р В°Р Т‘" << endl;
-            cout << "Р вЂ™Р В°РЎв‚¬ Р Р†РЎвЂ№Р В±Р С•РЎР‚: ";
-            cin >> inputChoice;
+    while (true) {
+        system("cls");
+
+        string inputChoice; // переменная для выбора способа ввода текста
+        cout << "Выберите способ ввода текста:" << endl;
+        cout << "1. Ввод с консоли" << endl;
+        cout << "2. Ввод из файла" << endl;
+        cout << "3. Назад" << endl;
+        cout << "Ваш выбор: ";
+        
+        try {
+            getline(cin, inputChoice);
 
             if (inputChoice == "3") {
                 return;
             }
 
+            if (inputChoice.length() != 1 || !isdigit(inputChoice[0]) || 
+                inputChoice[0] < '1' || inputChoice[0] > '3' || 
+                inputChoice.find(' ') != string::npos) {
+                throw invalid_argument("Неверный выбор. Попробуйте снова.");
+            }
+
             string text;
-            try {
-                if (inputChoice == "1") {
-                    text = inputTextFromConsole();
-                } else if (inputChoice == "2") {
-                    text = inputTextFromFile();
-                } else {
-                    throw runtime_error("Р СњР ВµР Р†Р ВµРЎР‚Р Р…РЎвЂ№Р в„– Р Р†РЎвЂ№Р В±Р С•РЎР‚.");
-                }
-            }
-            catch (const exception& e) {
-                cout << "Р С›РЎв‚¬Р С‘Р В±Р С”Р В°: " << e.what() << endl;
-                cout << "\nР СњР В°Р В¶Р СР С‘РЎвЂљР Вµ Enter Р Т‘Р В»РЎРЏ Р С—РЎР‚Р С•Р Т‘Р С•Р В»Р В¶Р ВµР Р…Р С‘РЎРЏ...";
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                cin.get();
-                continue;
+            if (inputChoice == "1") {
+                text = inputTextFromConsole();
+            } else if (inputChoice == "2") {
+                text = inputTextFromFile();
             }
 
-            if (text.empty()) continue;
-            
-            cout << "Р вЂќР В»Р С‘Р Р…Р В° Р Р†РЎвЂ¦Р С•Р Т‘Р Р…Р С•Р С–Р С• РЎвЂљР ВµР С”РЎРѓРЎвЂљР В°: " << text.length() << " Р В±Р В°Р в„–РЎвЂљ" << endl;
+            if (text.empty()) {
+                throw invalid_argument("Текст не может быть пустым.");
+            }
 
-            while (true) {
-                string keyChoice;
-                cout << "\nР вЂ™РЎвЂ№Р В±Р ВµРЎР‚Р С‘РЎвЂљР Вµ РЎРѓР С—Р С•РЎРѓР С•Р В± Р С—Р С•Р В»РЎС“РЎвЂЎР ВµР Р…Р С‘РЎРЏ Р С”Р В»РЎР‹РЎвЂЎР В°:" << endl;
-                cout << "1. Р вЂ™Р Р†Р ВµРЎРѓРЎвЂљР С‘ Р С”Р В»РЎР‹РЎвЂЎ Р Р†РЎР‚РЎС“РЎвЂЎР Р…РЎС“РЎР‹" << endl;
-                cout << "2. Р РЋР С–Р ВµР Р…Р ВµРЎР‚Р С‘РЎР‚Р С•Р Р†Р В°РЎвЂљРЎРЉ РЎРѓР В»РЎС“РЎвЂЎР В°Р в„–Р Р…РЎвЂ№Р в„– Р С”Р В»РЎР‹РЎвЂЎ" << endl;
-                cout << "3. Р вЂ”Р В°Р С–РЎР‚РЎС“Р В·Р С‘РЎвЂљРЎРЉ Р С”Р В»РЎР‹РЎвЂЎ Р С‘Р В· РЎвЂћР В°Р в„–Р В»Р В°" << endl;
-                cout << "4. Р СњР В°Р В·Р В°Р Т‘" << endl;
-                cout << "Р вЂ™Р В°РЎв‚¬ Р Р†РЎвЂ№Р В±Р С•РЎР‚: ";
-                cin >> keyChoice;
-
-                if (keyChoice == "4") {
-                    break;
-                }
-
-                string key;
+            string key;
+            bool keyObtained = false; // флаг, указывающий на то, что ключ был получен
+            while (!keyObtained) {
                 try {
+                    // Выбор способа получения ключа
+                    string keyChoice;
+                    cout << "\nВыберите способ получения ключа:" << endl;
+                    cout << "1. Сгенерировать случайный ключ" << endl;
+                    cout << "2. Загрузить ключ из файла" << endl;
+                    cout << "Ваш выбор: ";
+                    getline(cin, keyChoice);
+
+                    if (keyChoice.length() != 1 || !isdigit(keyChoice[0]) || 
+                        keyChoice[0] < '1' || keyChoice[0] > '2' || 
+                        keyChoice.find(' ') != string::npos) {
+                        throw invalid_argument("Неверный выбор способа получения ключа.");
+                    }
+
                     if (keyChoice == "1") {
-                        cout << "Р вЂ™Р Р†Р ВµР Т‘Р С‘РЎвЂљР Вµ Р С”Р В»РЎР‹РЎвЂЎ (Р Т‘Р В»Р С‘Р Р…Р В° Р С”Р В»РЎР‹РЎвЂЎР В° Р Т‘Р С•Р В»Р В¶Р Р…Р В° Р В±РЎвЂ№РЎвЂљРЎРЉ Р Р…Р Вµ Р СР ВµР Р…РЎРЉРЎв‚¬Р Вµ Р Т‘Р В»Р С‘Р Р…РЎвЂ№ РЎвЂљР ВµР С”РЎРѓРЎвЂљР В°: " << text.length() << "): ";
-                        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                        getline(cin, key);
-                    }
-                    else if (keyChoice == "2") {
                         key = generateRandomKey(text.length());
-                        cout << "Р РЋР С–Р ВµР Р…Р ВµРЎР‚Р С‘РЎР‚Р С•Р Р†Р В°Р Р… Р С”Р В»РЎР‹РЎвЂЎ Р Т‘Р В»Р С‘Р Р…Р С•Р в„– " << key.length() << " Р В±Р В°Р в„–РЎвЂљ" << endl;
+                        cout << "\nКлюч сгенерирован." << endl;
                         
-                        string saveKeyChoice;
-                        cout << "Р ТђР С•РЎвЂљР С‘РЎвЂљР Вµ РЎРѓР С•РЎвЂ¦РЎР‚Р В°Р Р…Р С‘РЎвЂљРЎРЉ Р С”Р В»РЎР‹РЎвЂЎ Р Р† РЎвЂћР В°Р в„–Р В»?" << endl;
-                        cout << "1. Р вЂќР В°" << endl;
-                        cout << "2. Р СњР ВµРЎвЂљ" << endl;
-                        cout << "3. Р СњР В°Р В·Р В°Р Т‘" << endl;
-                        cout << "Р вЂ™Р В°РЎв‚¬ Р Р†РЎвЂ№Р В±Р С•РЎР‚: ";
-                        cin >> saveKeyChoice;
-                        
-                        if (saveKeyChoice == "3") {
-                            continue;
-                        }
-                        
-                        if (saveKeyChoice == "1") {
-                            saveKeyToFile(key, "");
-                        }
-                    }
-                    else if (keyChoice == "3") {
-                        key = loadKeyFromFile();
-                        cout << "Р вЂ”Р В°Р С–РЎР‚РЎС“Р В¶Р ВµР Р… Р С”Р В»РЎР‹РЎвЂЎ Р Т‘Р В»Р С‘Р Р…Р С•Р в„– " << key.length() << " Р В±Р В°Р в„–РЎвЂљ" << endl;
-                    }
-                    else {
-                        throw runtime_error("Р СњР ВµР Р†Р ВµРЎР‚Р Р…РЎвЂ№Р в„– Р Р†РЎвЂ№Р В±Р С•РЎР‚.");
-                    }
-
-                    string encrypted = Vernam(text, key);
-                    cout << "Р СћР ВµР С”РЎРѓРЎвЂљ РЎС“РЎРѓР С—Р ВµРЎв‚¬Р Р…Р С• Р В·Р В°РЎв‚¬Р С‘РЎвЂћРЎР‚Р С•Р Р†Р В°Р Р… (Р Т‘Р В»Р С‘Р Р…Р В°: " << encrypted.length() << " Р В±Р В°Р в„–РЎвЂљ)" << endl;
-                    cout << "Р вЂ”Р В°РЎв‚¬Р С‘РЎвЂћРЎР‚Р С•Р Р†Р В°Р Р…Р Р…РЎвЂ№Р в„– РЎвЂљР ВµР С”РЎРѓРЎвЂљ: " << encrypted << endl;
-
-                    while (true) {
-                        string saveChoice;
-                        cout << "\nР РЋР С•РЎвЂ¦РЎР‚Р В°Р Р…Р С‘РЎвЂљРЎРЉ РЎР‚Р ВµР В·РЎС“Р В»РЎРЉРЎвЂљР В°РЎвЂљ Р Р† РЎвЂћР В°Р в„–Р В»?" << endl;
-                        cout << "1. Р вЂќР В°" << endl;
-                        cout << "2. Р СњР ВµРЎвЂљ" << endl;
-                        cout << "3. Р СњР В°Р В·Р В°Р Т‘" << endl;
-                        cout << "Р вЂ™Р В°РЎв‚¬ Р Р†РЎвЂ№Р В±Р С•РЎР‚: ";
-                        cin >> saveChoice;
-
-                        if (saveChoice == "3") {
-                            break;
-                        }
-
-                        if (saveChoice == "1") {
+                        bool keySaveChosen = false;
+                        while (!keySaveChosen) {
                             try {
-                                saveTextToFile(encrypted);
-                                cout << "\nР СњР В°Р В¶Р СР С‘РЎвЂљР Вµ Enter Р Т‘Р В»РЎРЏ Р С—РЎР‚Р С•Р Т‘Р С•Р В»Р В¶Р ВµР Р…Р С‘РЎРЏ...";
-                                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                                cin.get();
-                                return;
+                                // Спрашиваем о сохранении ключа
+                                string saveKeyChoice; 
+                                cout << "Сохранить ключ в файл?" << endl;
+                                cout << "1. Да" << endl;
+                                cout << "2. Нет" << endl;
+                                cout << "Ваш выбор: ";
+                                getline(cin, saveKeyChoice);
+
+                                if (saveKeyChoice.length() != 1 || !isdigit(saveKeyChoice[0]) || 
+                                    saveKeyChoice[0] < '1' || saveKeyChoice[0] > '2' || 
+                                    saveKeyChoice.find(' ') != string::npos) {
+                                    throw invalid_argument("Неверный выбор. Попробуйте снова.");
+                                }
+
+                                if (saveKeyChoice == "1") {
+                                    saveKeyToFile(key);
+                                }
+                                keySaveChosen = true;
                             }
                             catch (const exception& e) {
-                                cout << "Р С›РЎв‚¬Р С‘Р В±Р С”Р В° Р С—РЎР‚Р С‘ РЎРѓР С•РЎвЂ¦РЎР‚Р В°Р Р…Р ВµР Р…Р С‘Р С‘: " << e.what() << endl;
-                                cout << "\nР СњР В°Р В¶Р СР С‘РЎвЂљР Вµ Enter Р Т‘Р В»РЎРЏ Р С—РЎР‚Р С•Р Т‘Р С•Р В»Р В¶Р ВµР Р…Р С‘РЎРЏ...";
-                                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                                cin.get();
-                                continue;
+                                cout << "Ошибка: " << e.what() << endl;
+                                system("pause");
+                                system("cls");
+                                cout << "\nКлюч сгенерирован." << endl;
                             }
                         }
-                        else if (saveChoice == "2") {
-                            return;
-                        }
-                        else {
-                            cout << "Р СњР ВµР Р†Р ВµРЎР‚Р Р…РЎвЂ№Р в„– Р Р†РЎвЂ№Р В±Р С•РЎР‚." << endl;
-                            cout << "\nР СњР В°Р В¶Р СР С‘РЎвЂљР Вµ Enter Р Т‘Р В»РЎРЏ Р С—РЎР‚Р С•Р Т‘Р С•Р В»Р В¶Р ВµР Р…Р С‘РЎРЏ...";
-                            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                            cin.get();
-                        }
+                    } else {
+                        key = loadKeyFromFile();
+                    }
+
+                    if (key.length() != text.length()) {
+                        throw invalid_argument("Длина ключа должна совпадать с длиной текста!");
+                    }
+                    keyObtained = true;
+                }
+                catch (const exception& e) {
+                    cout << "Ошибка: " << e.what() << endl;
+                    system("pause");
+                    system("cls");
+                    cout << "Текст для шифрования: " << text << endl;
+                }
+            }
+
+            string result = Vernam(text, key);
+            cout << "\nЗашифрованный текст: " << result << endl;
+
+            bool saveMenuActive = true;
+            while (saveMenuActive) {
+                try {
+                    string saveChoice;
+                    cout << "\nСохранить результат в файл?" << endl;
+                    cout << "1. Да" << endl;
+                    cout << "2. Нет" << endl;
+                    cout << "3. Назад" << endl;
+                    cout << "Ваш выбор: ";
+                    getline(cin, saveChoice);
+
+                    if (saveChoice.length() != 1 || !isdigit(saveChoice[0]) || 
+                        saveChoice[0] < '1' || saveChoice[0] > '3' || 
+                        saveChoice.find(' ') != string::npos) {
+                        throw invalid_argument("Неверный выбор. Попробуйте снова.");
+                    }
+
+                    if (saveChoice == "1") {
+                        saveTextToFile(result);
+                        system("pause");
+                        return;
+                    }
+                    else if (saveChoice == "2") {
+                        return;
+                    }
+                    else if (saveChoice == "3") {
+                        saveMenuActive = false;
                     }
                 }
                 catch (const exception& e) {
-                    cout << "Р С›РЎв‚¬Р С‘Р В±Р С”Р В°: " << e.what() << endl;
-                    cout << "\nР СњР В°Р В¶Р СР С‘РЎвЂљР Вµ Enter Р Т‘Р В»РЎРЏ Р С—РЎР‚Р С•Р Т‘Р С•Р В»Р В¶Р ВµР Р…Р С‘РЎРЏ...";
-                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                    cin.get();
-                    continue;
+                    cout << "Ошибка: " << e.what() << endl;
+                    system("pause");
+                    system("cls");
+                    cout << "\nЗашифрованный текст: " << result << endl;
                 }
             }
         }
-    }
-    catch (const exception& e) {
-        cout << "Р С›РЎв‚¬Р С‘Р В±Р С”Р В°: " << e.what() << endl;
-        cout << "\nР СњР В°Р В¶Р СР С‘РЎвЂљР Вµ Enter Р Т‘Р В»РЎРЏ Р С—РЎР‚Р С•Р Т‘Р С•Р В»Р В¶Р ВµР Р…Р С‘РЎРЏ...";
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        cin.get();
+        catch (const exception& e) {
+            cout << "Ошибка: " << e.what() << endl;
+            system("pause");
+        }
     }
 }
 
+// функция дешифрования
 void VernamDecrypt() {
-    try {
-        while (true) {
-            system("cls");
-            string inputChoice;
-            cout << "Р вЂ™РЎвЂ№Р В±Р ВµРЎР‚Р С‘РЎвЂљР Вµ РЎРѓР С—Р С•РЎРѓР С•Р В± Р Р†Р Р†Р С•Р Т‘Р В° РЎвЂљР ВµР С”РЎРѓРЎвЂљР В°:" << endl;
-            cout << "1. Р вЂ™Р Р†Р С•Р Т‘ РЎРѓ Р С”Р С•Р Р…РЎРѓР С•Р В»Р С‘" << endl;
-            cout << "2. Р вЂ™Р Р†Р С•Р Т‘ Р С‘Р В· РЎвЂћР В°Р в„–Р В»Р В°" << endl;
-            cout << "3. Р СњР В°Р В·Р В°Р Т‘" << endl;
-            cout << "Р вЂ™Р В°РЎв‚¬ Р Р†РЎвЂ№Р В±Р С•РЎР‚: ";
-            cin >> inputChoice;
+    while (true) {
+        system("cls");
+
+        string inputChoice;
+        cout << "Выберите способ ввода текста:" << endl;
+        cout << "1. Ввод с консоли" << endl;
+        cout << "2. Ввод из файла" << endl;
+        cout << "3. Назад" << endl;
+        cout << "Ваш выбор: ";
+        
+        try {
+            getline(cin, inputChoice);
 
             if (inputChoice == "3") {
                 return;
             }
 
+            if (inputChoice.length() != 1 || !isdigit(inputChoice[0]) || 
+                inputChoice[0] < '1' || inputChoice[0] > '3' || 
+                inputChoice.find(' ') != string::npos) {
+                throw invalid_argument("Неверный выбор. Попробуйте снова.");
+            }
+
             string text;
-            try {
-                if (inputChoice == "1") {
-                    text = inputTextFromConsole();
-                } else if (inputChoice == "2") {
-                    text = inputTextFromFile();
-                } else {
-                    throw runtime_error("Р СњР ВµР Р†Р ВµРЎР‚Р Р…РЎвЂ№Р в„– Р Р†РЎвЂ№Р В±Р С•РЎР‚.");
-                }
-            }
-            catch (const exception& e) {
-                cout << "Р С›РЎв‚¬Р С‘Р В±Р С”Р В°: " << e.what() << endl;
-                cout << "\nР СњР В°Р В¶Р СР С‘РЎвЂљР Вµ Enter Р Т‘Р В»РЎРЏ Р С—РЎР‚Р С•Р Т‘Р С•Р В»Р В¶Р ВµР Р…Р С‘РЎРЏ...";
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                cin.get();
-                continue;
+            if (inputChoice == "1") {
+                text = inputTextFromConsole();
+            } else if (inputChoice == "2") {
+                text = inputTextFromFile();
             }
 
-            if (text.empty()) continue;
-            
-            cout << "Р вЂќР В»Р С‘Р Р…Р В° Р Р†РЎвЂ¦Р С•Р Т‘Р Р…Р С•Р С–Р С• РЎвЂљР ВµР С”РЎРѓРЎвЂљР В°: " << text.length() << " Р В±Р В°Р в„–РЎвЂљ" << endl;
+            if (text.empty()) {
+                throw invalid_argument("Текст не может быть пустым.");
+            }
 
-            while (true) {
-                string keyChoice;
-                cout << "\nР вЂ™РЎвЂ№Р В±Р ВµРЎР‚Р С‘РЎвЂљР Вµ РЎРѓР С—Р С•РЎРѓР С•Р В± Р С—Р С•Р В»РЎС“РЎвЂЎР ВµР Р…Р С‘РЎРЏ Р С”Р В»РЎР‹РЎвЂЎР В°:" << endl;
-                cout << "1. Р вЂ™Р Р†Р ВµРЎРѓРЎвЂљР С‘ Р С”Р В»РЎР‹РЎвЂЎ Р Р†РЎР‚РЎС“РЎвЂЎР Р…РЎС“РЎР‹" << endl;
-                cout << "2. Р вЂ”Р В°Р С–РЎР‚РЎС“Р В·Р С‘РЎвЂљРЎРЉ Р С”Р В»РЎР‹РЎвЂЎ Р С‘Р В· РЎвЂћР В°Р в„–Р В»Р В°" << endl;
-                cout << "3. Р СњР В°Р В·Р В°Р Т‘" << endl;
-                cout << "Р вЂ™Р В°РЎв‚¬ Р Р†РЎвЂ№Р В±Р С•РЎР‚: ";
-                cin >> keyChoice;
-
-                if (keyChoice == "3") {
-                    break;
-                }
-
-                string key;
+            string key;
+            bool keyObtained = false;
+            while (!keyObtained) {
                 try {
-                    if (keyChoice == "1") {
-                        cout << "Р вЂ™Р Р†Р ВµР Т‘Р С‘РЎвЂљР Вµ Р С”Р В»РЎР‹РЎвЂЎ (Р Т‘Р В»Р С‘Р Р…Р В° Р С”Р В»РЎР‹РЎвЂЎР В° Р Т‘Р С•Р В»Р В¶Р Р…Р В° Р В±РЎвЂ№РЎвЂљРЎРЉ Р Р…Р Вµ Р СР ВµР Р…РЎРЉРЎв‚¬Р Вµ Р Т‘Р В»Р С‘Р Р…РЎвЂ№ РЎвЂљР ВµР С”РЎРѓРЎвЂљР В°: " << text.length() << "): ";
-                        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                        getline(cin, key);
+                    cout << "\nЗагрузка ключа из файла..." << endl;
+                    key = loadKeyFromFile();
+
+                    if (key.length() != text.length()) {
+                        throw invalid_argument("Длина ключа должна совпадать с длиной текста!");
                     }
-                    else if (keyChoice == "2") {
-                        key = loadKeyFromFile();
-                        cout << "Р вЂ”Р В°Р С–РЎР‚РЎС“Р В¶Р ВµР Р… Р С”Р В»РЎР‹РЎвЂЎ Р Т‘Р В»Р С‘Р Р…Р С•Р в„– " << key.length() << " Р В±Р В°Р в„–РЎвЂљ" << endl;
+                    keyObtained = true;
+                }
+                catch (const exception& e) {
+                    cout << "Ошибка: " << e.what() << endl;
+                    system("pause");
+                    system("cls");
+                    cout << "Текст для расшифрования: " << text << endl;
+                }
+            }
+
+            string result = Vernam(text, key);
+            cout << "\nРасшифрованный текст: " << result << endl;
+
+            bool saveMenuActive = true;
+            while (saveMenuActive) {
+                try {
+                    string saveChoice;
+                    cout << "\nСохранить результат в файл?" << endl;
+                    cout << "1. Да" << endl;
+                    cout << "2. Нет" << endl;
+                    cout << "3. Назад" << endl;
+                    cout << "Ваш выбор: ";
+                    getline(cin, saveChoice);
+
+                    if (saveChoice.length() != 1 || !isdigit(saveChoice[0]) || 
+                        saveChoice[0] < '1' || saveChoice[0] > '3' || 
+                        saveChoice.find(' ') != string::npos) {
+                        throw invalid_argument("Неверный выбор. Попробуйте снова.");
                     }
-                    else {
-                        throw runtime_error("Р СњР ВµР Р†Р ВµРЎР‚Р Р…РЎвЂ№Р в„– Р Р†РЎвЂ№Р В±Р С•РЎР‚.");
+
+                    if (saveChoice == "1") {
+                        saveTextToFile(result);
+                        system("pause");
+                        return;
                     }
-
-                    string decrypted = Vernam(text, key);
-                    cout << "Р СћР ВµР С”РЎРѓРЎвЂљ РЎС“РЎРѓР С—Р ВµРЎв‚¬Р Р…Р С• Р Т‘Р ВµРЎв‚¬Р С‘РЎвЂћРЎР‚Р С•Р Р†Р В°Р Р… (Р Т‘Р В»Р С‘Р Р…Р В°: " << decrypted.length() << " Р В±Р В°Р в„–РЎвЂљ)" << endl;
-                    cout << "Р вЂќР ВµРЎв‚¬Р С‘РЎвЂћРЎР‚Р С•Р Р†Р В°Р Р…Р Р…РЎвЂ№Р в„– РЎвЂљР ВµР С”РЎРѓРЎвЂљ: " << decrypted << endl;
-
-                    while (true) {
-                        string saveChoice;
-                        cout << "\nР РЋР С•РЎвЂ¦РЎР‚Р В°Р Р…Р С‘РЎвЂљРЎРЉ РЎР‚Р ВµР В·РЎС“Р В»РЎРЉРЎвЂљР В°РЎвЂљ Р Р† РЎвЂћР В°Р в„–Р В»?" << endl;
-                        cout << "1. Р вЂќР В°" << endl;
-                        cout << "2. Р СњР ВµРЎвЂљ" << endl;
-                        cout << "3. Р СњР В°Р В·Р В°Р Т‘" << endl;
-                        cout << "Р вЂ™Р В°РЎв‚¬ Р Р†РЎвЂ№Р В±Р С•РЎР‚: ";
-                        cin >> saveChoice;
-
-                        if (saveChoice == "3") {
-                            break;
-                        }
-
-                        if (saveChoice == "1") {
-                            try {
-                                saveTextToFile(decrypted);
-                                cout << "\nР СњР В°Р В¶Р СР С‘РЎвЂљР Вµ Enter Р Т‘Р В»РЎРЏ Р С—РЎР‚Р С•Р Т‘Р С•Р В»Р В¶Р ВµР Р…Р С‘РЎРЏ...";
-                                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                                cin.get();
-                                return;
-                            }
-                            catch (const exception& e) {
-                                cout << "Р С›РЎв‚¬Р С‘Р В±Р С”Р В° Р С—РЎР‚Р С‘ РЎРѓР С•РЎвЂ¦РЎР‚Р В°Р Р…Р ВµР Р…Р С‘Р С‘: " << e.what() << endl;
-                                cout << "\nР СњР В°Р В¶Р СР С‘РЎвЂљР Вµ Enter Р Т‘Р В»РЎРЏ Р С—РЎР‚Р С•Р Т‘Р С•Р В»Р В¶Р ВµР Р…Р С‘РЎРЏ...";
-                                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                                cin.get();
-                                continue;
-                            }
-                        }
-                        else if (saveChoice == "2") {
-                            return;
-                        }
-                        else {
-                            cout << "Р СњР ВµР Р†Р ВµРЎР‚Р Р…РЎвЂ№Р в„– Р Р†РЎвЂ№Р В±Р С•РЎР‚." << endl;
-                            cout << "\nР СњР В°Р В¶Р СР С‘РЎвЂљР Вµ Enter Р Т‘Р В»РЎРЏ Р С—РЎР‚Р С•Р Т‘Р С•Р В»Р В¶Р ВµР Р…Р С‘РЎРЏ...";
-                            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                            cin.get();
-                        }
+                    else if (saveChoice == "2") {
+                        return;
+                    }
+                    else if (saveChoice == "3") {
+                        saveMenuActive = false;
                     }
                 }
                 catch (const exception& e) {
-                    cout << "Р С›РЎв‚¬Р С‘Р В±Р С”Р В°: " << e.what() << endl;
-                    cout << "\nР СњР В°Р В¶Р СР С‘РЎвЂљР Вµ Enter Р Т‘Р В»РЎРЏ Р С—РЎР‚Р С•Р Т‘Р С•Р В»Р В¶Р ВµР Р…Р С‘РЎРЏ...";
-                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                    cin.get();
-                    continue;
+                    cout << "Ошибка: " << e.what() << endl;
+                    system("pause");
+                    system("cls");
+                    cout << "\nРасшифрованный текст: " << result << endl;
                 }
             }
         }
-    }
-    catch (const exception& e) {
-        cout << "Р С›РЎв‚¬Р С‘Р В±Р С”Р В°: " << e.what() << endl;
-        cout << "\nР СњР В°Р В¶Р СР С‘РЎвЂљР Вµ Enter Р Т‘Р В»РЎРЏ Р С—РЎР‚Р С•Р Т‘Р С•Р В»Р В¶Р ВµР Р…Р С‘РЎРЏ...";
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        cin.get();
+        catch (const exception& e) {
+            cout << "Ошибка: " << e.what() << endl;
+            system("pause");
+        }
     }
 }

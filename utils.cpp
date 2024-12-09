@@ -8,7 +8,6 @@ using namespace std;
 string inputTextFromConsole() {
     string text;
     cout << "Введите текст: ";
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
     getline(cin, text);
     
     if (text.empty()) {
@@ -21,19 +20,19 @@ string inputTextFromConsole() {
 string inputTextFromFile() {
     string filename;
     cout << "Введите имя файла: ";
-    cin >> filename;
+    getline(cin, filename);
 
-    if (filename.empty()) {
-        throw runtime_error("Имя файла не может быть пустым!");
+    if (filename.empty() || filename.find(' ') != string::npos) {
+        throw runtime_error("Некорректное имя файла!");
     }
 
-    ifstream file(filename);
+    ifstream file(filename); // открываем файл
     if (!file.is_open()) {
         throw runtime_error("Ошибка открытия файла: " + filename);
     }
 
-    string text((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
-    file.close();
+    string text((istreambuf_iterator<char>(file)), istreambuf_iterator<char>()); // читаем файл в строку
+    file.close(); // закрываем файл
 
     if (text.empty()) {
         throw runtime_error("Файл пуст!");
@@ -49,69 +48,71 @@ void saveTextToFile(const string& text) {
 
     string filename;
     cout << "Введите имя файла для сохранения: ";
-    cin >> filename;
+    getline(cin, filename);
 
-    if (filename.empty()) {
-        throw runtime_error("Имя файла не может быть пустым!");
+    if (filename.empty() || filename.find(' ') != string::npos) {
+        throw runtime_error("Некорректное имя файла!");
     }
 
-    ofstream file(filename);
+    ofstream file(filename); // открываем файл
     if (!file.is_open()) {
         throw runtime_error("Ошибка создания файла: " + filename);
     }
 
-    file << text;
-    file.close();
+    file << text; // записываем текст в файл
+    file.close(); // закрываем файл
     cout << "Текст сохранен в файл: " << filename << endl;
 }
 
 // сохранение ключа в файл
-void saveKeyToFile(const string& key, const string& filename) {
-    string saveFilename = filename;
+void saveKeyToFile(const string& key) {
+    string filename;
     
-    if (filename.empty()) {
-        cout << "Введите имя файла для сохранения ключа: ";
-        cin >> saveFilename;
-    }
+    cout << "Введите имя файла для сохранения ключа: ";
+    getline(cin, filename);
 
-    if (saveFilename.empty()) {
-        throw runtime_error("Имя файла не может быть пустым!");
+    if (filename.empty() || filename.find(' ') != string::npos) {
+        throw runtime_error("Некорректное имя файла!");
     }
 
     // добавляем расширение .key, если его нет
-    if (fs::path(saveFilename).extension().empty()) {
-        saveFilename += ".key";
+    if (fs::path(filename).extension().empty()) {
+        filename += ".key";
     }
 
-    ofstream keyFile(saveFilename, ios::binary);
-    if (!keyFile.is_open()) {
-        throw runtime_error("Ошибка создания файла ключа: " + saveFilename);
+    ofstream keyFile(filename, ios::binary); // открываем файл
+    if (!keyFile.is_open()) { // если не удалось открыть файл
+        throw runtime_error("Ошибка создания файла ключа: " + filename);
     }
 
-    keyFile.write(key.c_str(), key.length());
+    keyFile.write(key.c_str(), key.length()); // записываем ключ в файл 
+                                              // c_str() возвращает указатель на начало строки 
+                                              // length() возвращает длину строки 
     keyFile.close();
 
-    cout << "Ключ сохранен в файл: " << saveFilename << endl;
+    cout << "Ключ сохранен в файл: " << filename << endl;
 }
 
 // загрузка ключа из файла
-string loadKeyFromFile(const string& filename) {
-    string loadFilename = filename;
+string loadKeyFromFile() {
+    string filename;
     
-    if (filename.empty()) {
-        cout << "Введите имя файла ключа: ";
-        cin >> loadFilename;
+    cout << "Введите имя файла ключа: ";
+    getline(cin, filename);
+
+    if (filename.empty() || filename.find(' ') != string::npos) {
+        throw runtime_error("Некорректное имя файла!");
     }
 
-    ifstream keyFile(loadFilename, ios::binary);
+    ifstream keyFile(filename, ios::binary); // открываем файл (ios::binary - чтение в бинарном формате, для сохранения спецсимволов)
     if (!keyFile.is_open()) {
-        throw runtime_error("Ошибка открытия файла ключа: " + loadFilename);
+        throw runtime_error("Ошибка открытия файла ключа: " + filename);
     }
 
     // читаем файл в строку
-    stringstream buffer;
-    buffer << keyFile.rdbuf();
-    string key = buffer.str();
+    stringstream buffer; 
+    buffer << keyFile.rdbuf(); // перемещаем содержимое файла в поток
+    string key = buffer.str(); // преобразуем поток в строку
     keyFile.close();
 
     if (key.empty()) {
@@ -123,7 +124,7 @@ string loadKeyFromFile(const string& filename) {
 
 // проверка корректности магического квадрата
 bool validateMagicSquare(const vector<vector<int>>& square) {
-    if (square.empty() || square[0].empty() || square.size() != square[0].size()) {
+    if (square.empty() || square[0].empty() || square.size() != square[0].size()) { // проверка на пустой квадрат
         return false;
     }
 
@@ -166,24 +167,46 @@ bool validateMagicSquare(const vector<vector<int>>& square) {
 }
 
 // сохранение магического квадрата в файл
-void saveMagicSquare(const vector<vector<int>>& square, const string& filename) {
-    ofstream file(filename);
+void saveMagicSquare(const vector<vector<int>>& square) {
+    string filename;
+    cout << "Введите имя файла для сохранения магического квадрата: ";
+    getline(cin, filename);
+
+    if (filename.empty() || filename.find(' ') != string::npos) {
+        throw runtime_error("Некорректное имя файла!");
+    }
+
+    // добавляем расширение .msq, если его нет
+    if (fs::path(filename).extension().empty()) {
+        filename += ".msq";
+    }
+
+    ofstream file(filename); // открываем файл
     if (!file.is_open()) {
         throw runtime_error("Ошибка создания файла: " + filename);
     }
     
     file << square.size() << endl;  // сохраняем размер квадрата
-    for (const auto& row : square) {
-        for (int num : row) {
+    for (const auto& row : square) { // сохраняем элементы квадрата
+        for (int num : row) { // проходимся по всем элементам строки
             file << num << " ";
         }
         file << endl;
     }
     file.close();
+    cout << "Магический квадрат сохранен в файл: " << filename << endl;
 }
 
 // загрузка магического квадрата из файла
-vector<vector<int>> loadMagicSquare(const string& filename) {
+vector<vector<int>> loadMagicSquare() {
+    string filename;
+    cout << "Введите имя файла магического квадрата: ";
+    getline(cin, filename);
+
+    if (filename.empty() || filename.find(' ') != string::npos) {
+        throw runtime_error("Некорректное имя файла!");
+    }
+
     ifstream file(filename);
     if (!file.is_open()) {
         throw runtime_error("Ошибка открытия файла: " + filename);
@@ -192,10 +215,18 @@ vector<vector<int>> loadMagicSquare(const string& filename) {
     int size;
     file >> size;  // читаем размер квадрата
     
+    if (size % 2 == 0 || size < 3 || size > 9) {
+        file.close();
+        throw runtime_error("Некорректный размер магического квадрата в файле!");
+    }
+    
     vector<vector<int>> square(size, vector<int>(size));
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size; j++) {
-            file >> square[i][j];
+            if (!(file >> square[i][j])) {
+                file.close();
+                throw runtime_error("Ошибка чтения данных из файла!");
+            }
         }
     }
     file.close();
@@ -210,7 +241,7 @@ vector<vector<int>> loadMagicSquare(const string& filename) {
 // вывод магического квадрата на экран
 void displayMagicSquare(const vector<vector<int>>& square) {
     cout << "\nМагический квадрат " << square.size() << "x" << square.size() << ":" << endl;
-    for (const auto& row : square) {
+    for (const auto& row : square) { // проходимся по всем элементам квадрата
         for (int num : row) {
             cout << num << "\t";
         }
@@ -219,15 +250,16 @@ void displayMagicSquare(const vector<vector<int>>& square) {
     cout << endl;
 }
 
-// алфавит для русских букв и спецсимволов
+// алфавит для русских букв и спецсимволов (для проверки корректности текста)
 const string RUSSIAN_ALPHABET = 
     "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
     "абвгдеёжзийклмнопрстуфхцчшщъыьэюя"
     "!@#$%^&*()_+-={}[]|\\:;<>,.?/~`'\""
     " \n";
 
+// проверка корректности текста
 bool isAllowedChar(char c) {
-    return RUSSIAN_ALPHABET.find(c) != string::npos ||  // Русские буквы и спецсимволы
+    return RUSSIAN_ALPHABET.find(c) != string::npos ||  // русские буквы и спецсимволы
            (c >= 'A' && c <= 'Z') ||
            (c >= 'a' && c <= 'z') ||
            (c >= '0' && c <= '9');

@@ -15,14 +15,15 @@
 #include <iterator>
 #include <filesystem>
 #include <sstream>
+#include <limits>
 #include "Header.h"
 #include "utils.h"
 
 using namespace std;
 
 // общие функции
-string inputTextFromFile(); // ввод текста из фаи?ла
-void saveTextToFile(const string& text); // сохранение текста в фаи?л
+string inputTextFromFile(); // ввод текста из фаийла
+void saveTextToFile(const string& text); // сохранение текста в файл
 
 // функции шифра Атбаш
 string Atbash(string text);

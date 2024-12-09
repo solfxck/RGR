@@ -1,5 +1,6 @@
 #include "Header.h"
 #include "utils.h"
+#include <stdexcept>
 
 using namespace std;
 
@@ -7,130 +8,144 @@ int main() {
     SetConsoleCP(1251);
     SetConsoleOutputCP(1251);
 
-    // проверка пароля
-    string login, password;
-    string correctLogin = "admin";
-    string correctPassword = "123";
+    try {
+        // авторизация
+        string login, password;
+        string correctLogin = "admin";
+        string correctPassword = "123";
 
-    cout << "Введите логин: ";
-    cin >> login;
-    cout << "Введите пароль: ";
-    cin >> password;
+        cout << "Введите логин: ";
+        getline(cin, login);
+        cout << "Введите пароль: ";
+        getline(cin, password);
 
-    if (login != correctLogin || password != correctPassword) {
-        cout << "Неверный логин или пароль. Доступ запрещен." << endl;
-        return 0;
-    }
+        // проверка логина и пароля
+        if (login != correctLogin || password != correctPassword || 
+            login.find(' ') != string::npos || password.find(' ') != string::npos) {
+            throw runtime_error("Неверный логин или пароль. Доступ запрещен.");
+        }
 
-    string choice; // переменная для выбора
-    bool isExit = false; // переменная для выхода
+        string choice; // для хранения выбора
+        bool isExit = false; // для завершения работы
 
-    while (!isExit) {
-        system("cls");
-
-        // главное меню
-        cout << "Выберите действие:" << endl;
-        cout << "1. Шифр Атбаша" << endl;
-        cout << "2. Шифр Вернама" << endl;
-        cout << "3. Магический квадрат" << endl;
-        cout << "4. Выход" << endl;
-        cout << "Ваш выбор: ";
-        
-        cin >> choice;
-
-        // обработка выбора пользователя
-        switch (choice[0]) {
-            case '1': {
-                bool backToMain = false;
-                while (!backToMain) {
-                    system("cls");
-                    cout << "Шифр Атбаш:" << endl;
-                    cout << "1. Шифрование" << endl;
-                    cout << "2. Дешифрование" << endl;
-                    cout << "3. Назад" << endl;
-                    cout << "Ваш выбор: ";
-                    
-                    string choice;
-                    cin >> choice;
-                    
-                    if (choice == "1") {
-                        AtbashEncrypt();
-                    }
-                    else if (choice == "2") {
-                        AtbashDecrypt();
-                    }
-                    else if (choice == "3") {
-                        backToMain = true;
-                    }
-                    else {
-                        cout << "Неверный выбор." << endl;
-                    }
+        while (!isExit) {
+            try {
+                // меню
+                system("cls");
+                cout << "Выберите действие:" << endl;
+                cout << "1. Шифр Атбаша" << endl;
+                cout << "2. Шифр Вернама" << endl;
+                cout << "3. Магический квадрат" << endl;
+                cout << "4. Выход" << endl;
+                cout << "Ваш выбор: ";
+                
+                getline(cin, choice);
+                
+                if (choice.length() != 1 || !isdigit(choice[0]) || choice[0] < '1' || choice[0] > '4' || 
+                    choice.find(' ') != string::npos) {
+                    throw invalid_argument("Неверный выбор. Попробуйте снова."); 
                 }
-                break;
-            }
-            case '2': {
-                bool backToMain = false;
-                while (!backToMain) {
-                    system("cls");
-                    cout << "Шифр Вернама:" << endl;
-                    cout << "1. Шифрование" << endl;
-                    cout << "2. Дешифрование" << endl;
-                    cout << "3. Назад" << endl;
-                    cout << "Ваш выбор: ";
-                    
-                    string choice;
-                    cin >> choice;
-                    
-                    if (choice == "1") {
-                        VernamEncrypt();
+
+                switch (choice[0]) {
+
+                    case '1': {
+                        bool backToMain = false;
+                        while (!backToMain) {
+                            try {
+                                system("cls");
+                                cout << "Шифр Атбаш:" << endl;
+                                cout << "1. Шифрование" << endl;
+                                cout << "2. Дешифрование" << endl;
+                                cout << "3. Назад" << endl;
+                                cout << "Ваш выбор: ";
+                                
+                                string subChoice; // для хранения выбора
+                                getline(cin, subChoice); 
+                                
+                                if (subChoice == "1") AtbashEncrypt();
+                                else if (subChoice == "2") AtbashDecrypt();
+                                else if (subChoice == "3") backToMain = true;
+                                else throw invalid_argument("Неверный выбор");
+                            }
+                            catch (const exception& e) {
+                                cerr << "Ошибка: " << e.what() << endl;
+                                system("pause");
+                            }
+                        }
+                        break;
                     }
-                    else if (choice == "2") {
-                        VernamDecrypt();
+
+                    case '2': {
+                        bool backToMain = false;
+                        while (!backToMain) {
+                            try {
+                                system("cls");
+                                cout << "Шифр Вернама:" << endl;
+                                cout << "1. Шифрование" << endl;
+                                cout << "2. Дешифрование" << endl;
+                                cout << "3. Назад" << endl;
+                                cout << "Ваш выбор: ";
+                                
+                                string subChoice;
+                                getline(cin, subChoice);
+                                
+                                if (subChoice == "1") VernamEncrypt();
+                                else if (subChoice == "2") VernamDecrypt();
+                                else if (subChoice == "3") backToMain = true;
+                                else throw invalid_argument("Неверный выбор");
+                            }
+                            catch (const exception& e) {
+                                cerr << "Ошибка: " << e.what() << endl;
+                                system("pause");
+                            }
+                        }
+                        break;
                     }
-                    else if (choice == "3") {
-                        backToMain = true;
+
+                    case '3': {
+                        bool backToMain = false;
+                        while (!backToMain) {
+                            try {
+                                system("cls");
+                                cout << "Шифр \"Магический квадрат\":" << endl;
+                                cout << "1. Шифрование" << endl;
+                                cout << "2. Дешифрование" << endl;
+                                cout << "3. Назад" << endl;
+                                cout << "Ваш выбор: ";
+                                
+                                string subChoice;
+                                getline(cin, subChoice);
+                                
+                                if (subChoice == "1") MagicSquareEncrypt();
+                                else if (subChoice == "2") MagicSquareDecrypt();
+                                else if (subChoice == "3") backToMain = true;
+                                else throw invalid_argument("Неверный выбор");
+                            }
+                            catch (const exception& e) {
+                                cerr << "Ошибка: " << e.what() << endl;
+                                system("pause");
+                            }
+                        }
+                        break;
                     }
-                    else {
-                        cout << "Неверный выбор." << endl;
-                    }
+                    case '4':
+                        isExit = true;
+                        cout << "Завершение работы . . ." << endl;
+                        break;
                 }
-                break;
             }
-            case '3': {
-                bool backToMain = false;
-                while (!backToMain) {
-                    system("cls");
-                    cout << "Шифр \"Магический квадрат\":" << endl;
-                    cout << "1. Шифрование" << endl;
-                    cout << "2. Дешифрование" << endl;
-                    cout << "3. Назад" << endl;
-                    cout << "Ваш выбор: ";
-                    
-                    string choice;
-                    cin >> choice;
-                    
-                    if (choice == "1") {
-                        MagicSquareEncrypt();
-                    }
-                    else if (choice == "2") {
-                        MagicSquareDecrypt();
-                    }
-                    else if (choice == "3") {
-                        backToMain = true;
-                    }
-                    else {
-                        cout << "Неверный выбор." << endl;
-                    }
-                }
-                break;
+
+            catch (const exception& e) {
+                cerr << "Ошибка: " << e.what() << endl;
+                system("pause");
             }
-            case '4':
-                isExit = true;
-                cout << "Завершение работы . . ." << endl;
-                break;
-            default:
-                cout << "Неверный выбор. Попробуйте снова." << endl;
         }
     }
+
+    catch (const exception& e) {
+        cerr << "Критическая ошибка: " << e.what() << endl;
+        return 1;
+    }
+    
     return 0;
 }
