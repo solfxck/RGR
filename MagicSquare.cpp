@@ -3,29 +3,30 @@
 
 using namespace std;
 
-// генерация магического квадрата
+// генерация магического квадрата (Метод Сиамского квадрата)
 vector<vector<int>> generateMagicSquare(int size) {
-    vector<vector<int>> square(size, vector<int>(size, 0)); // создаем пустой квадрат
+    vector<vector<int>> square(size, vector<int>(size, 0));
     int n = size;
-    
-    int i = n / 2; // начальные координаты
-    int j = n - 1; // начальные координаты
+
+    // начальные координаты
+    int i = n / 2; // строка
+    int j = n - 1; // столбец
     
     // заполняем квадрат числами от 1 до n*n
-    for (int num = 1; num <= n * n;) { // num - номер числа
-        if (i == -1 && j == n) { // если мы вышли за пределы квадрата
-            j = n-2; // возвращаемся на предпоследнюю строку
-            i = 0; // и переходим на первый столбец
+    for (int num = 1; num <= n * n;) {
+        if (i == -1 && j == n) { //за пределы квадрата
+            j = n - 2;
+            i = 0;
         } else {
-            if (j == n) j = 0; // если мы вышли за пределы столбца, возвращаемся на первый столбец
-            if (i < 0) i = n-1; // если мы вышли за пределы строки, возвращаемся на последнюю строку
+            if (j == n) j = 0; // за пределы столбца
+            if (i < 0) i = n-1; // за пределы строки
         }
         
-        if (square[i][j] != 0) { // если клетка уже заполнена
+        if (square[i][j] != 0) {
             j -= 2; // возвращаемся на предпоследнюю строку
             i++; // и переходим на первый столбец
             continue; // продолжаем цикл
-        } else { // если клетка пуста
+        } else {
             square[i][j] = num++; // заполняем клетку номером 
         }
         
@@ -36,16 +37,15 @@ vector<vector<int>> generateMagicSquare(int size) {
     return square;
 }
 
-// реализация шифра "Магический квадрат"
+// реализация шифра
 string MagicSquare(const string& text, const vector<vector<int>>& square, bool isEncrypt) {    
     int n = square.size();
     int blockSize = n * n; 
     
-    // создаем копию текста для обработки (чтобы не изменять исходный текст)
     string workText = text; 
     
     // находим количество поддерживаемых символов
-    int supportedChars = 0; // количество поддерживаемых символов
+    int supportedChars = 0;
     for (char c : workText) {
         if (isAllowedChar(c)) { 
             supportedChars++;
@@ -53,7 +53,7 @@ string MagicSquare(const string& text, const vector<vector<int>>& square, bool i
     }
     
     // дополняем текст пробелами до размера, кратного размеру блока
-    while (supportedChars % blockSize != 0) { // пока количество поддерживаемых символов не кратно размеру блока
+    while (supportedChars % blockSize != 0) {
         workText += ' '; // добавляем пробел
         supportedChars++;
     }
@@ -61,7 +61,6 @@ string MagicSquare(const string& text, const vector<vector<int>>& square, bool i
     string result;
     result.reserve(workText.length()); // предварительное выделение памяти (для оптимизации)
     
-    // временный буфер для поддерживаемых символов (чтобы не изменять исходный текст)
     vector<char> supportedBuffer;
     vector<size_t> originalPositions; // позиции исходных символов
     
@@ -135,9 +134,7 @@ void MagicSquareEncrypt() {
                 return;
             }
 
-            if (inputChoice.length() != 1 || !isdigit(inputChoice[0]) || 
-                inputChoice[0] < '1' || inputChoice[0] > '3' || 
-                inputChoice.find(' ') != string::npos) {
+            if (inputChoice != "1" && inputChoice != "2" && inputChoice != "3") {
                 throw invalid_argument("Неверный выбор. Попробуйте снова.");
             }
 
@@ -165,9 +162,7 @@ void MagicSquareEncrypt() {
                     cout << "Ваш выбор: ";
                     getline(cin, sizeChoice);
 
-                    if (sizeChoice.length() != 1 || !isdigit(sizeChoice[0]) || 
-                        sizeChoice[0] < '1' || sizeChoice[0] > '4' || 
-                        sizeChoice.find(' ') != string::npos) {
+                    if (sizeChoice != "1" && sizeChoice != "2" && sizeChoice != "3" && sizeChoice != "4") {
                         throw invalid_argument("Неверный выбор размера квадрата.");
                     }
 
@@ -190,9 +185,7 @@ void MagicSquareEncrypt() {
                             cout << "Ваш выбор: ";
                             getline(cin, saveSquareChoice);
 
-                            if (saveSquareChoice.length() != 1 || !isdigit(saveSquareChoice[0]) || 
-                                saveSquareChoice[0] < '1' || saveSquareChoice[0] > '2' || 
-                                saveSquareChoice.find(' ') != string::npos) {
+                            if (saveSquareChoice != "1" && saveSquareChoice != "2") {
                                 throw invalid_argument("Неверный выбор. Попробуйте снова.");
                             }
 
@@ -283,9 +276,7 @@ void MagicSquareDecrypt() {
                 return;
             }
 
-            if (inputChoice.length() != 1 || !isdigit(inputChoice[0]) || 
-                inputChoice[0] < '1' || inputChoice[0] > '3' || 
-                inputChoice.find(' ') != string::npos) {
+            if (inputChoice != "1" && inputChoice != "2" && inputChoice != "3") {
                 throw invalid_argument("Неверный выбор. Попробуйте снова.");
             }
 
@@ -334,9 +325,7 @@ void MagicSquareDecrypt() {
                     cout << "Ваш выбор: ";
                     getline(cin, saveChoice);
 
-                    if (saveChoice.length() != 1 || !isdigit(saveChoice[0]) || 
-                        saveChoice[0] < '1' || saveChoice[0] > '3' || 
-                        saveChoice.find(' ') != string::npos) {
+                    if (saveChoice != "1" && saveChoice != "2" && saveChoice != "3") {
                         throw invalid_argument("Неверный выбор. Попробуйте снова.");
                     }
 

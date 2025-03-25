@@ -31,7 +31,9 @@ string inputTextFromFile() {
         throw runtime_error("Ошибка открытия файла: " + filename);
     }
 
-    string text((istreambuf_iterator<char>(file)), istreambuf_iterator<char>()); // читаем файл в строку
+    stringstream buffer; // строковый поток
+    buffer << file.rdbuf(); // указатель на буфер файла
+    string text = buffer.str();
     file.close(); // закрываем файл
 
     if (text.empty()) {
@@ -40,7 +42,7 @@ string inputTextFromFile() {
     return text;
 }
 
-// функция сохранения текста в файл
+// сохранение текста в файл
 void saveTextToFile(const string& text) {
     if (text.empty()) {
         throw runtime_error("Нечего сохранять - текст пуст!");

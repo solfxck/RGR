@@ -3,7 +3,7 @@
   "C_Cpp_Runner.cppCompilerPath": "g++",
   "C_Cpp_Runner.debuggerPath": "gdb",
   "C_Cpp_Runner.cStandard": "",
-  "C_Cpp_Runner.cppStandard": "",
+  "C_Cpp_Runner.cppStandard": "c++23",
   "C_Cpp_Runner.msvcBatchPath": "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Auxiliary/Build/vcvarsall.bat",
   "C_Cpp_Runner.useMsvc": false,
   "C_Cpp_Runner.warnings": [
@@ -65,6 +65,8 @@
     "iosfwd": "cpp",
     "array": "cpp",
     "string_view": "cpp",
-    "fstream": "cpp"
+    "fstream": "cpp",
+    "string": "cpp",
+    "unordered_map": "cpp"
   }
 }

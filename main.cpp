@@ -1,6 +1,5 @@
 #include "Header.h"
 #include "utils.h"
-#include <stdexcept>
 
 using namespace std;
 
@@ -30,7 +29,6 @@ int main() {
 
         while (!isExit) {
             try {
-                // לום‏
                 system("cls");
                 cout << "ֲûבונטעו הויסעגטו:" << endl;
                 cout << "1. ״טפנ ְעבארא" << endl;

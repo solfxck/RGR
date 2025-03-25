@@ -9,27 +9,27 @@ int getCharIndex(char c) {
     unsigned char uc = static_cast<unsigned char>(c);
     int index = -1;
     
-    // проверка диапазона символов (0xC0-0xDF)
+    // 0xC0-0xDF (русские заглавные буквы в win 1251)
     if (uc >= 0xC0 && uc <= 0xDF) {
-        index = uc - 0xC0;
+        index = uc - 0xC0; // индексы 0-31
     }
-    // проверка диапазона символов (0xE0-0xFF)
+    // 0xE0-0xFF (русские строчные буквы)
     else if (uc >= 0xE0 && uc <= 0xFF) {
-        index = (uc - 0xE0) + 32;
+        index = (uc - 0xE0) + 32; // 32-63
     }
-    // проверка диапазона символов (A-Z)
+
     else if (uc >= 'A' && uc <= 'Z') {
-        index = (uc - 'A') + 64;
+        index = (uc - 'A') + 64; // 64-89
     }
-    // проверка диапазона символов (a-z)
+
     else if (uc >= 'a' && uc <= 'z') {
-        index = (uc - 'a') + 90;
+        index = (uc - 'a') + 90; // 90-115
     }
-    // проверка диапазона символов (0-9)
+
     else if (uc >= '0' && uc <= '9') {
-        index = (uc - '0') + 116;
+        index = (uc - '0') + 116; // 116-125
     }
-    // специальные символы
+    // специальные символы 126+
     else {
         const string specialChars = " .,!?@#$%^&*()-+=<>[]{}|/\"';:\\";
         size_t pos = specialChars.find(c);
@@ -45,23 +45,22 @@ int getCharIndex(char c) {
 char getCharFromIndex(int index) {
     if (index < 0) return '\0';
     
-    // проверка диапазона символов (0xC0)
     if (index < 32) {
         return static_cast<char>(index + 0xC0);
     }
-    // проверка диапазона символов (0xE0)
+
     else if (index < 64) {
         return static_cast<char>((index - 32) + 0xE0);
     }
-    // проверка диапазона символов (A-Z)
+
     else if (index < 90) {
         return static_cast<char>((index - 64) + 'A');
     }
-    // проверка диапазона символов (a-z)
+
     else if (index < 116) {
         return static_cast<char>((index - 90) + 'a');
     }
-    // проверка диапазона символов (0-9)
+
     else if (index < 126) {
         return static_cast<char>((index - 116) + '0');
     }
@@ -94,8 +93,8 @@ string generateRandomKey(int length) {
 
 // функция для шифрования текста с использованием метода Вернама
 string Vernam(const string& text, const string& key) {    
-    string result; // строка для хранения зашифрованного текста
-    result.reserve(text.length()); // предварительное выделение памяти
+    string result;
+    result.reserve(text.length());
     
     for (size_t i = 0; i < text.length(); ++i) { // проход по каждому символу текста
         unsigned char textChar = static_cast<unsigned char>(text[i]); // преобразование символа в unsigned char
@@ -115,10 +114,10 @@ string Vernam(const string& text, const string& key) {
         char resultChar = getCharFromIndex(resultIndex); // преобразование индекса в символ
         
         // если результат не найден, добавляем исходный символ
-        if (resultChar == '\0') {
-            result += text[i];
+        if (resultChar == '\0') { 
+            result += text[i]; // подставляем исходный символ
         } else {
-            result += resultChar;
+            result += resultChar; // иначе используем зашифрованный символ
         }
     }
     
@@ -129,7 +128,7 @@ void VernamEncrypt() {
     while (true) {
         system("cls");
 
-        string inputChoice; // переменная для выбора способа ввода текста
+        string inputChoice;
         cout << "Выберите способ ввода текста:" << endl;
         cout << "1. Ввод с консоли" << endl;
         cout << "2. Ввод из файла" << endl;
@@ -143,9 +142,7 @@ void VernamEncrypt() {
                 return;
             }
 
-            if (inputChoice.length() != 1 || !isdigit(inputChoice[0]) || 
-                inputChoice[0] < '1' || inputChoice[0] > '3' || 
-                inputChoice.find(' ') != string::npos) {
+            if (inputChoice != "1" && inputChoice != "2" && inputChoice != "3") {
                 throw invalid_argument("Неверный выбор. Попробуйте снова.");
             }
 
@@ -172,9 +169,7 @@ void VernamEncrypt() {
                     cout << "Ваш выбор: ";
                     getline(cin, keyChoice);
 
-                    if (keyChoice.length() != 1 || !isdigit(keyChoice[0]) || 
-                        keyChoice[0] < '1' || keyChoice[0] > '2' || 
-                        keyChoice.find(' ') != string::npos) {
+                    if (keyChoice != "1" && keyChoice != "2") {
                         throw invalid_argument("Неверный выбор способа получения ключа.");
                     }
 
@@ -193,9 +188,7 @@ void VernamEncrypt() {
                                 cout << "Ваш выбор: ";
                                 getline(cin, saveKeyChoice);
 
-                                if (saveKeyChoice.length() != 1 || !isdigit(saveKeyChoice[0]) || 
-                                    saveKeyChoice[0] < '1' || saveKeyChoice[0] > '2' || 
-                                    saveKeyChoice.find(' ') != string::npos) {
+                                if (saveKeyChoice != "1" && saveKeyChoice != "2") {
                                     throw invalid_argument("Неверный выбор. Попробуйте снова.");
                                 }
 
@@ -242,9 +235,7 @@ void VernamEncrypt() {
                     cout << "Ваш выбор: ";
                     getline(cin, saveChoice);
 
-                    if (saveChoice.length() != 1 || !isdigit(saveChoice[0]) || 
-                        saveChoice[0] < '1' || saveChoice[0] > '3' || 
-                        saveChoice.find(' ') != string::npos) {
+                    if (saveChoice != "1" && saveChoice != "2" && saveChoice != "3") {
                         throw invalid_argument("Неверный выбор. Попробуйте снова.");
                     }
 
@@ -294,9 +285,7 @@ void VernamDecrypt() {
                 return;
             }
 
-            if (inputChoice.length() != 1 || !isdigit(inputChoice[0]) || 
-                inputChoice[0] < '1' || inputChoice[0] > '3' || 
-                inputChoice.find(' ') != string::npos) {
+            if (inputChoice != "1" && inputChoice != "2" && inputChoice != "3") {
                 throw invalid_argument("Неверный выбор. Попробуйте снова.");
             }
 
@@ -345,9 +334,7 @@ void VernamDecrypt() {
                     cout << "Ваш выбор: ";
                     getline(cin, saveChoice);
 
-                    if (saveChoice.length() != 1 || !isdigit(saveChoice[0]) || 
-                        saveChoice[0] < '1' || saveChoice[0] > '3' || 
-                        saveChoice.find(' ') != string::npos) {
+                    if (inputChoice != "1" && inputChoice != "2" && inputChoice != "3") {
                         throw invalid_argument("Неверный выбор. Попробуйте снова.");
                     }
 

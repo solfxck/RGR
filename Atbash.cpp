@@ -57,7 +57,6 @@ string Atbash(string text) {
     return text;
 }
 
-// функция шифрования
 void AtbashEncrypt() {
     while (true) {
         system("cls");
@@ -76,9 +75,7 @@ void AtbashEncrypt() {
                 return;
             }
 
-            if (inputChoice.length() != 1 || !isdigit(inputChoice[0]) || 
-                inputChoice[0] < '1' || inputChoice[0] > '3' || 
-                inputChoice.find(' ') != string::npos) {
+            if (inputChoice != "1" && inputChoice != "2" && inputChoice != "3") {
                 throw invalid_argument("Неверный выбор. Попробуйте снова.");
             }
 
@@ -107,9 +104,7 @@ void AtbashEncrypt() {
                     cout << "Ваш выбор: ";
                     getline(cin, saveChoice);
 
-                    if (saveChoice.length() != 1 || !isdigit(saveChoice[0]) || 
-                        saveChoice[0] < '1' || saveChoice[0] > '3' || 
-                        saveChoice.find(' ') != string::npos) {
+                    if (saveChoice != "1" && saveChoice != "2" && saveChoice != "3") {
                         throw invalid_argument("Неверный выбор. Попробуйте снова.");
                     }
 
@@ -159,9 +154,7 @@ void AtbashDecrypt() {
                 return;
             }
 
-            if (inputChoice.length() != 1 || !isdigit(inputChoice[0]) || 
-                inputChoice[0] < '1' || inputChoice[0] > '3' || 
-                inputChoice.find(' ') != string::npos) {
+            if (inputChoice != "1" && inputChoice != "2" && inputChoice != "3") {
                 throw invalid_argument("Неверный выбор. Попробуйте снова.");
             }
 
@@ -190,9 +183,7 @@ void AtbashDecrypt() {
                     cout << "Ваш выбор: ";
                     getline(cin, saveChoice);
 
-                    if (saveChoice.length() != 1 || !isdigit(saveChoice[0]) || 
-                        saveChoice[0] < '1' || saveChoice[0] > '3' || 
-                        saveChoice.find(' ') != string::npos) {
+                    if (saveChoice != "1" && saveChoice != "2" && saveChoice != "3") {
                         throw invalid_argument("Неверный выбор. Попробуйте снова.");
                     }
 

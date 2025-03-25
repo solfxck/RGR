@@ -1,21 +1,12 @@
 #pragma once
-#include <string>
 #include <vector>
 #include <fstream>
 #include <iostream>
-#include <stdexcept>
-#include <set>
 #include <algorithm>
-#include <Windows.h>
+#include <Windows.h> // для кодировки
 #include <map>
-#include <limits>
-#include <cmath>
-#include <random>
-#include <ctime>
-#include <iterator>
+#include <string>
 #include <filesystem>
-#include <sstream>
-#include <limits>
 #include "Header.h"
 #include "utils.h"
 
